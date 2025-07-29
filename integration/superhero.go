@@ -13,7 +13,7 @@ var (
     apiToken = os.Getenv("API_TOKEN")
 )
 
-func ComparePower(hero, other string) (string, error) {
+func CompareHerosPower(hero, other string) (string, error) {
 	heroPower, err := getPower(hero)
 
     if err != nil {

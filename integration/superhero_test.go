@@ -8,7 +8,7 @@ import (
 )
 
 func TestComparePowers(t *testing.T) {
-	res, err := integration.ComparePower("ironman", "wolverine")
+	res, err := integration.CompareHerosPower("ironman", "wolverine")
 	require.NoError(t, err, "Recieved invalid power value")
 	assert.Equal(t, res, "ironman")
 }

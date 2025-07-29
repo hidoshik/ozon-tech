@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -26,6 +27,8 @@ func TestSuperHeroAPI_ByName(t *testing.T) {
 			t.Fatalf("Request failed: %v", err)
 		}
 
+		defer resp.Body.Close()
+
 		got := resp.StatusCode
 		want := http.StatusOK
 
@@ -37,10 +40,11 @@ func TestSuperHeroAPI_ByName(t *testing.T) {
 	// далее использую assert для читаемости
 	t.Run("should be successful", func(t *testing.T) {
 		resp, err := makeRequest(NAME)
-		assert.NoError(t, err, "Request failed")
-
+		require.NoError(t, err, "Request failed")
+		defer resp.Body.Close()
+		
 		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err, "Failed to read response body")
+		require.NoError(t, err, "Failed to read response body")
 		
 		var data APIResponse
 		err = json.Unmarshal(body, &data)
@@ -52,10 +56,10 @@ func TestSuperHeroAPI_ByName(t *testing.T) {
 
 	t.Run("should give error when using invalid superhero name", func(t *testing.T) {
 		resp, err := makeRequest(INVALID_NAME)
-		assert.NoError(t, err, "Request failed")
+		require.NoError(t, err, "Request failed")
 
 		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err, "Failed to read response body")
+		require.NoError(t, err, "Failed to read response body")
 		
 		var data APIResponseError
 		err = json.Unmarshal(body, &data)
