@@ -1,7 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from '../fixtures/auth.fixture';
 
 test.describe('test', () => {
-  test('j', async () => {
+  test('j', async ({ authUser }) => {
     
   })
 })
