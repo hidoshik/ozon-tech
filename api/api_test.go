@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// получить токен https://superheroapi.com/index.html
 var (
     apiToken = os.Getenv("API_TOKEN")
 )
