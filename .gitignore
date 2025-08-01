@@ -3,3 +3,4 @@
 */playwright-report/
 .env*
 screenshots/
+*/allure-results/
