@@ -9,5 +9,5 @@ test("should login to existing profile", async ({ page, authUser }) => {
   const loginHeading = page.locator(
     `//*[contains(@class, "submenu-item-heading") and text()='${authUser.login}']`
   );
-  await expect(loginHeading).toBeVisible();
+  await expect(loginHeading, 'User login is visible when logged in').toBeVisible();
 });

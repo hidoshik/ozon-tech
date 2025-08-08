@@ -18,5 +18,5 @@ test('should navigate to first article when pressing \'enter\'', async ({ page }
         searchInput.press('Enter')
     ])
 
-    await expect(page).toHaveTitle(articleTitle);
+    await expect(page, 'Correct page title should display for the article').toHaveTitle(articleTitle);
 })
