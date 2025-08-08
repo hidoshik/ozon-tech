@@ -59,7 +59,7 @@ func (s *SuperHeroAPISuite) TestShouldBeSuccessful(t provider.T) {
 			t.Assert().NoError(err, "JSON decode error")
 
 			t.Assert().Equal(NAME, data.ResultsFor, "Unexpected superhero name")
-			t.Assert().Equal("success", "Unexpected response value")
+			t.Assert().Equal("success", data.Response, "Unexpected response value")
 		})
 	})
 }
