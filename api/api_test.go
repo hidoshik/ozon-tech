@@ -4,80 +4,85 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"os"
 	"testing"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"api-test/helpers"
 )
-
-// получить токен https://superheroapi.com/index.html
 
 type SuperHeroAPISuite struct {
 	suite.Suite
-	apiToken string
 }
 
 func (s *SuperHeroAPISuite) BeforeAll(t provider.T) {
-	s.apiToken = os.Getenv("API_TOKEN")
-	require.NotEmpty(t, s.apiToken, "API_TOKEN must be set")
-}
+	_, err := helpers.GetAPIToken();
 
-func (s *SuperHeroAPISuite) makeRequest(name string) (*http.Response, error) {
-	return http.Get("https://superheroapi.com/api/" + s.apiToken + "/search/" + name)
+	if err != nil {
+		t.Fatalf("Failed to get API token: %v", err)
+	}
+	
+	t.Log("API token has been set successfully")
 }
 
 func (s *SuperHeroAPISuite) TestShouldHaveStatusCode200(t provider.T) {
 	t.WithNewStep("Make and validate request", func(step provider.StepCtx) {
-		resp, err := s.makeRequest(NAME)
-		require.NoError(t, err, "Request failed")
+		apiToken, _ := helpers.GetAPIToken();
+
+		resp, err := helpers.MakeRequest(NAME, apiToken)
+		t.Require().NoError(err, "Request failed")
 		defer resp.Body.Close()
 
+		//вложенный шаг
 		step.WithNewStep("Check status code", func(sCtx provider.StepCtx) {
 			got := resp.StatusCode
 			want := http.StatusOK
-			assert.Equal(t, want, got, "Unexpected status code")
+			t.Assert().Equal(want, got, "Unexpected status code")
 		})
 	})
 }
 
 func (s *SuperHeroAPISuite) TestShouldBeSuccessful(t provider.T) {
 	t.WithNewStep("Make and validate request", func(step provider.StepCtx) {
-		resp, err := s.makeRequest(NAME)
-		require.NoError(t, err, "Request failed")
+		apiToken, _ := helpers.GetAPIToken();
+
+		resp, err := helpers.MakeRequest(NAME, apiToken)
+		t.Require().NoError(err, "Request failed")
 		defer resp.Body.Close()
 
+		// вложенный шаг
 		step.WithNewStep("Parse and validate response", func(sCtx provider.StepCtx) {
 			body, err := io.ReadAll(resp.Body)
-			require.NoError(t, err, "Failed to read response body")
+			t.Require().NoError(err, "Failed to read response body")
 			
 			var data APIResponse
 			err = json.Unmarshal(body, &data)
-			assert.NoError(t, err, "JSON decode error")
+			t.Assert().NoError(err, "JSON decode error")
 
-			assert.Equal(t, NAME, data.ResultsFor)
-			assert.Equal(t, "success", data.Response)
+			t.Assert().Equal(NAME, data.ResultsFor, "Unexpected superhero name")
+			t.Assert().Equal("success", "Unexpected response value")
 		})
 	})
 }
 
 func (s *SuperHeroAPISuite) TestShouldGiveErrorForInvalidName(t provider.T) {
 	t.WithNewStep("Make request with invalid name", func(step provider.StepCtx) {
-		resp, err := s.makeRequest(INVALID_NAME)
-		require.NoError(t, err, "Request failed")
+		apiToken, _ := helpers.GetAPIToken();
+
+		resp, err := helpers.MakeRequest(INVALID_NAME, apiToken)
+		t.Require().NoError(err, "Request failed")
 		defer resp.Body.Close()
 
+		// вложенный шаг
 		step.WithNewStep("Parse and validate error response", func(sCtx provider.StepCtx) {
 			body, err := io.ReadAll(resp.Body)
-			require.NoError(t, err, "Failed to read response body")
+			t.Require().NoError(err, "Failed to read response body")
 			
 			var data APIResponseError
 			err = json.Unmarshal(body, &data)
-			assert.NoError(t, err, "JSON decode error")
+			t.Assert().NoError(err, "JSON decode error")
 
-			assert.Equal(t, "character with given name not found", data.Error)
-			assert.Equal(t, "error", data.Response)
+			t.Assert().Equal("character with given name not found", data.Error, "Unexpected error message")
+			t.Assert().Equal("error", data.Response, "Unexpected response value")
 		})
 	})
 }
